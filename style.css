@@ -1,0 +1,23 @@
+/* 
+    Created on : Dec 6, 2018, 6:27:47 PM
+    Author     : Dylan
+*/
+.gridpane{
+    -fx-alignment: center;
+}
+
+.header{
+    -fx-font-size: 25px;
+    -fx-font-weight: bold;
+}
+
+
+
+.toolbar{
+    -fx-spacing: 20px;
+    -fx-alignment: center;
+    -fx-padding: 10px;
+}
+
+
+
