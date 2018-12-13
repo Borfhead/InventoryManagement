@@ -24,15 +24,13 @@ public class Inventory {
        allParts = parts;
    }
    
-   
-   
    public void addProduct(Product product){
        product.setProductID(productIDCounter);
        products.add(product);
        productIDCounter++;
    }
    
-   public boolean removeProduct(int prodNum){
+   public boolean deleteProduct(int prodNum){
        try{
        products.remove(prodNum);
        return true;
@@ -44,8 +42,17 @@ public class Inventory {
        }
    }
    
+   public boolean deleteProduct(Product toDelete){
+       return products.remove(toDelete);
+   }
+   
    public Product lookupProduct(int prodNum){
-       return products.get(prodNum);
+       for(Product p : products){
+           if(p.getProductID() == prodNum){
+               return p;
+           }
+       }
+       return null;
    }
    
    public void updateProduct(int prodNum){

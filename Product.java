@@ -12,14 +12,13 @@ import java.util.ArrayList;
  * @author Dylan
  */
 public class Product {
-    
-    private ArrayList<Part> associatedParts;
     private int productID;
     private String name;
     private double price;
     private int inStock;
     private int min;
     private int max;
+    private ArrayList<Part> associatedParts;
     
     public Product(){
         name = "";
@@ -50,16 +49,30 @@ public class Product {
         this.max = max;
     }
     
+    
+    public void setProductID(int newID){
+        productID = newID;
+    }
+    
+    public int getProductID(){
+        return productID;
+    }
+    
+    
     public void setName(String newName){
         name = newName;
     }
     
-    public String getname(){
+    public String getName(){
         return name;
     }
     
     public void setPrice(double newPrice){
         price = newPrice;
+    }
+    
+    public double getPrice(){
+        return price;
     }
     
     public void setInStock(int num){
@@ -112,11 +125,7 @@ public class Product {
         
     }
     
-    public void setProductID(int newID){
-        productID = newID;
-    }
     
-    public int getProductID(){
-        return productID;
-    }
+    
+    
 }
