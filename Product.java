@@ -26,6 +26,7 @@ public class Product {
         inStock = 0;
         min = 0;
         max = 0;
+        associatedParts = new ArrayList<>();
     }
     
     public Product(String name, double price, int inStock,
@@ -36,6 +37,7 @@ public class Product {
         this.inStock = inStock;
         this.min = min;
         this.max = max;
+        associatedParts = new ArrayList<>();
         
     }
     
@@ -47,6 +49,7 @@ public class Product {
         this.inStock = inStock;
         this.min = min;
         this.max = max;
+        associatedParts = new ArrayList<>();
     }
     
     
@@ -114,6 +117,10 @@ public class Product {
         }
     }
     
+    public boolean removeAssociatedPart(Part toRemove){
+        return associatedParts.remove(toRemove);
+    }
+    
     public Part lookupAssociatedPart(int index){
         try{
             return associatedParts.get(index);
@@ -125,6 +132,9 @@ public class Product {
         
     }
     
+    public ArrayList<Part> getAssociatedParts(){
+        return associatedParts;
+    }
     
     
     

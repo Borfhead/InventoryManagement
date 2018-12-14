@@ -63,9 +63,7 @@ public class InventoryManagement extends Application {
         
         //Set up inventory and add a default test part
         inventory = new Inventory();
-        inventory.addPart(new Inhouse("Test Part", 1.25, 10,
-            5, 15, 65412));
-        inventory.addProduct(new Product("Test", 5.0, 20, 10, 30));
+        populateInventory();
         
         
         //Initiate parts and product lists to populate the TableViews with
@@ -79,7 +77,7 @@ public class InventoryManagement extends Application {
         searchPartsBtn = new Button("Search");
         searchPartsField = new TextField();
         searchPartsBtn.setOnAction(e -> {
-            searchParts();
+            searchParts(searchPartsField, partsList);
         });
         addSearchResetListener(searchPartsField, partsList, inventory.getAllParts());
         addIntListener(searchPartsField);
@@ -558,6 +556,8 @@ public class InventoryManagement extends Application {
     
     
     public void openAddProductMenu(){
+        Product newProd = new Product();
+        
         Label header = new Label("Add Product");
         header.getStyleClass().add("header");
         Label idLabel = new Label("ID:");
@@ -608,11 +608,101 @@ public class InventoryManagement extends Application {
         left.setVgap(10);
         left.setHgap(10);
         
+        Label availablePartsLabel = new Label("Available Parts");
+        TableView<Part> availablePartsTable = new TableView<>();
+        availablePartsTable.setPrefHeight(150);
+        TableColumn partsCol = new TableColumn("Part ID");
+        partsCol.setPrefWidth(150);
+        partsCol.setCellValueFactory(new PropertyValueFactory<>("partID"));
+        TableColumn partsNameCol = new TableColumn("Part Name");
+        partsNameCol.setPrefWidth(150);
+        partsNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        TableColumn partsInvLvlCol = new TableColumn("Inventory Level");
+        partsInvLvlCol.setPrefWidth(150);
+        partsInvLvlCol.setCellValueFactory(new PropertyValueFactory<>("inStock"));
+        TableColumn partsPriceCol = new TableColumn("Price/Cost Per Unit");
+        partsPriceCol.setPrefWidth(150);
+        partsPriceCol.setCellValueFactory(new PropertyValueFactory<>("price"));
+        availablePartsTable.getColumns().addAll(partsCol, partsNameCol, partsInvLvlCol,
+                partsPriceCol);
+        availablePartsTable.setEditable(false);
+        ObservableList<Part> availableParts = FXCollections.observableArrayList(inventory.getAllParts());
+        availablePartsTable.setItems(availableParts);
+        
+        
+        Label associatedPartsLabel = new Label("Associated Parts");
+        TableView<Part> associatedPartsTable = new TableView<>();
+        associatedPartsTable.setPrefHeight(150);
+        TableColumn partsCol2 = new TableColumn("Part ID");
+        partsCol2.setPrefWidth(150);
+        partsCol2.setCellValueFactory(new PropertyValueFactory<>("partID"));
+        TableColumn partsNameCol2 = new TableColumn("Part Name");
+        partsNameCol2.setPrefWidth(150);
+        partsNameCol2.setCellValueFactory(new PropertyValueFactory<>("name"));
+        TableColumn partsInvLvlCol2 = new TableColumn("Inventory Level");
+        partsInvLvlCol2.setPrefWidth(150);
+        partsInvLvlCol2.setCellValueFactory(new PropertyValueFactory<>("inStock"));
+        TableColumn partsPriceCol2 = new TableColumn("Price/Cost Per Unit");
+        partsPriceCol2.setPrefWidth(150);
+        partsPriceCol2.setCellValueFactory(new PropertyValueFactory<>("price"));
+        associatedPartsTable.getColumns().addAll(partsCol2, partsNameCol2, partsInvLvlCol2,
+                partsPriceCol2);
+        associatedPartsTable.setEditable(false);
+        ObservableList<Part> associatedParts = FXCollections.observableArrayList();
+        associatedPartsTable.setItems(associatedParts);
+        
+        Button searchAvlPartsBtn = new Button ("Search");
+        TextField searchAvlPartsField = new TextField();
+        addIntListener(searchAvlPartsField);
+        addSearchResetListener(searchAvlPartsField, availableParts, inventory.getAllParts());
+        searchAvlPartsBtn.setOnAction(e -> {
+            searchParts(searchAvlPartsField, availableParts);
+        });
+        
+        Button addToPartsBtn = new Button("Add");
+        addToPartsBtn.setOnAction(e -> {
+            if(availablePartsTable.getSelectionModel().getSelectedItem() == null){
+               Alert alert = new Alert(AlertType.WARNING);
+               alert.setHeaderText("Please select a part to add");
+               alert.showAndWait();
+           }
+           else{
+               newProd.addAssociatedPart(availablePartsTable.getSelectionModel().getSelectedItem());
+               associatedParts.setAll(newProd.getAssociatedParts());
+           }
+        });
+        
+        Button removeAssociatedPartBtn = new Button("Delete");
+        removeAssociatedPartBtn.setOnAction(e -> {
+            if(associatedPartsTable.getSelectionModel().getSelectedItem() == null){
+               Alert alert = new Alert(AlertType.WARNING);
+               alert.setHeaderText("Please select a part to remove");
+               alert.showAndWait();
+           }
+           else{
+               newProd.removeAssociatedPart(associatedPartsTable.getSelectionModel().getSelectedItem());
+               associatedParts.setAll(newProd.getAssociatedParts());
+           }
+        });
+        
+        GridPane right = new GridPane();
+        HBox box = new HBox();
+        box.setSpacing(10);
+        box.getChildren().addAll(availablePartsLabel, searchAvlPartsBtn, searchAvlPartsField);
+        right.setVgap(10);
+        right.add(box, 0, 0);
+        right.add(availablePartsTable, 0, 1);
+        right.add(addToPartsBtn, 0, 2);
+        right.add(associatedPartsLabel, 0, 3);
+        right.add(associatedPartsTable, 0, 4);
+        right.add(removeAssociatedPartBtn, 0, 5);
+        
         ToolBar bottom = new ToolBar();
         bottom.getStyleClass().add("toolbar");
         Button saveBtn = new Button ("Save");
         saveBtn.setOnAction(e->{
-            try{
+            if(newProd.getAssociatedParts().size() >= 2){
+                try{
                     String name = nameField.getText();
                     double price = Double.parseDouble(priceField.getText());
                     int inStock = Integer.parseInt(invField.getText());
@@ -628,6 +718,13 @@ public class InventoryManagement extends Application {
                     alert.setHeaderText("Please fill in every field.");
                     alert.showAndWait();
                 }
+            }
+            else{
+                Alert alert = new Alert(AlertType.WARNING);
+                    alert.setHeaderText("Products must have at least two parts.");
+                    alert.showAndWait();
+            }
+            
         });
         Button cancelBtn = new Button ("Cancel");
         cancelBtn.setOnAction(e->{
@@ -639,18 +736,20 @@ public class InventoryManagement extends Application {
         BorderPane addProductPane = new BorderPane();
         addProductPane.setTop(top);
         addProductPane.setLeft(left);
+        addProductPane.setRight(right);
         addProductPane.setBottom(bottom);
+        scene.getWindow().setWidth(1000);
         scene.setRoot(addProductPane);
     }
     
     
-    public void searchParts(){
+    public void searchParts(TextField searchField, ObservableList<Part> pList){
         int lookupID;
         try{
-            lookupID = Integer.parseInt(searchPartsField.getText());
+            lookupID = Integer.parseInt(searchField.getText());
             ArrayList<Part> searchList = new ArrayList<>();
             searchList.add(inventory.lookupPart(lookupID));
-            partsList.setAll(searchList);
+            pList.setAll(searchList);
         }
         catch(NumberFormatException e){
             Alert alert = new Alert(AlertType.WARNING);
@@ -715,5 +814,26 @@ public class InventoryManagement extends Application {
         scene.setRoot(mainPane);
         scene.getWindow().setWidth(1250);
         scene.getWindow().centerOnScreen();
+    }
+    
+    public void populateInventory(){
+        Part p1 = new Inhouse("Pedals", 50.00, 50, 25, 100, 65412);
+        Part p2 = new Outsourced("Handlebars", 75.99, 10, 5, 15, "Trek Co.");
+        Part p3 = new Inhouse("Seat", 25.99, 10, 1, 20, 13546);
+        Part p4 = new Outsourced("Grips", 10.00, 2, 10, 20, "Cool Bike Co.");
+        Part p5 = new Outsourced("Road Bars", 75.00, 10, 5, 15, "Trek Co.");
+        
+        inventory.addPart(p1);
+        inventory.addPart(p2);
+        inventory.addPart(p3);
+        inventory.addPart(p4);
+        inventory.addPart(p5);
+        
+        Product pr = new Product ("Mountain Bike", 500.00, 20, 10, 30);
+        pr.addAssociatedPart(p1);
+        pr.addAssociatedPart(p2);
+        pr.addAssociatedPart(p3);
+        pr.addAssociatedPart(p4);
+        inventory.addProduct(pr);
     }
 }
