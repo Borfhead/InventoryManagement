@@ -136,6 +136,10 @@ public class Product {
         return associatedParts;
     }
     
+    public void setAssociatedParts(ArrayList<Part> toSet){
+        associatedParts = toSet;
+    }
+    
     
     
 }

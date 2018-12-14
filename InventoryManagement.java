@@ -175,7 +175,14 @@ public class InventoryManagement extends Application {
         });
         modifyProductsBtn = new Button("Modify");
         modifyProductsBtn.setOnAction(e -> {
-            
+            if(productsTable.getSelectionModel().getSelectedItem() == null){
+               Alert alert = new Alert(AlertType.WARNING);
+               alert.setHeaderText("Please select a product to modify");
+               alert.showAndWait();
+           }
+           else{
+               openModifyProductMenu(productsTable.getSelectionModel().getSelectedItem());
+           }
         });
         deleteProductsBtn = new Button("Delete");
         deleteProductsBtn.setOnAction(e -> {
@@ -338,6 +345,9 @@ public class InventoryManagement extends Application {
             if(inHouseBtn.isSelected()){
                 try{
                     String name = nameField.getText();
+                    if(name.equals("")){
+                        throw new NumberFormatException();
+                    }
                     double price = Double.parseDouble(priceField.getText());
                     int inStock = Integer.parseInt(invField.getText());
                     int min = Integer.parseInt(minField.getText());
@@ -357,6 +367,9 @@ public class InventoryManagement extends Application {
             else if(outSourcedBtn.isSelected()){
                 try{
                     String name = nameField.getText();
+                    if(name.equals("")){
+                        throw new NumberFormatException();
+                    }
                     double price = Double.parseDouble(priceField.getText());
                     int inStock = Integer.parseInt(invField.getText());
                     int min = Integer.parseInt(minField.getText());
@@ -503,6 +516,9 @@ public class InventoryManagement extends Application {
                 try{
                     int partID = Integer.parseInt(idField.getText());
                     String name = nameField.getText();
+                    if(name.equals("")){
+                        throw new NumberFormatException();
+                    }
                     double price = Double.parseDouble(priceField.getText());
                     int inStock = Integer.parseInt(invField.getText());
                     int min = Integer.parseInt(minField.getText());
@@ -523,6 +539,9 @@ public class InventoryManagement extends Application {
                 try{
                     int partID = Integer.parseInt(idField.getText());
                     String name = nameField.getText();
+                    if(name.equals("")){
+                        throw new NumberFormatException();
+                    }
                     double price = Double.parseDouble(priceField.getText());
                     int inStock = Integer.parseInt(invField.getText());
                     int min = Integer.parseInt(minField.getText());
@@ -704,12 +723,215 @@ public class InventoryManagement extends Application {
             if(newProd.getAssociatedParts().size() >= 2){
                 try{
                     String name = nameField.getText();
+                    if(name.equals("")){
+                        throw new NumberFormatException();
+                    }
                     double price = Double.parseDouble(priceField.getText());
                     int inStock = Integer.parseInt(invField.getText());
                     int min = Integer.parseInt(minField.getText());
                     int max = Integer.parseInt(maxField.getText());
-                    Product prod = new Product(name, price, inStock, min, max);
-                    inventory.addProduct(prod);
+                    newProd.setName(name);
+                    newProd.setPrice(price);
+                    newProd.setInStock(inStock);
+                    newProd.setMax(max);
+                    newProd.setMin(min);
+                    inventory.addProduct(newProd);
+                    productList.setAll(inventory.getProducts());
+                    resetScene();
+                }
+                catch(NumberFormatException err){
+                    Alert alert = new Alert(AlertType.WARNING);
+                    alert.setHeaderText("Please fill in every field.");
+                    alert.showAndWait();
+                }
+            }
+            else{
+                Alert alert = new Alert(AlertType.WARNING);
+                    alert.setHeaderText("Products must have at least two parts.");
+                    alert.showAndWait();
+            }
+            
+        });
+        Button cancelBtn = new Button ("Cancel");
+        cancelBtn.setOnAction(e->{
+           resetScene();
+        });
+        bottom.getItems().addAll(saveBtn, cancelBtn);
+        
+        
+        BorderPane addProductPane = new BorderPane();
+        addProductPane.setTop(top);
+        addProductPane.setLeft(left);
+        addProductPane.setRight(right);
+        addProductPane.setBottom(bottom);
+        scene.getWindow().setWidth(1000);
+        scene.setRoot(addProductPane);
+    }
+    
+    public void openModifyProductMenu(Product toModify){
+        Label header = new Label("Add Product");
+        header.getStyleClass().add("header");
+        Label idLabel = new Label("ID:");
+        Label nameLabel = new Label("Name:");
+        Label invLabel = new Label("In Stock:");
+        Label priceLabel = new Label("Price:");
+        Label maxLabel = new Label("Max:");
+        Label minLabel = new Label("Min:");
+        
+        TextField idField = new TextField();
+        idField.setText(Integer.toString(toModify.getProductID()));
+        idField.setDisable(true);
+        TextField nameField = new TextField();
+        nameField.setText(toModify.getName());
+        TextField invField = new TextField();
+        invField.setText(Integer.toString(toModify.getInStock()));
+        addIntListener(invField);
+        TextField priceField = new TextField();
+        priceField.setText(Double.toString(toModify.getPrice()));
+        addDoubleListener(priceField);
+        TextField maxField = new TextField();
+        maxField.setText(Integer.toString(toModify.getMax()));
+        maxField.setMaxWidth(60);
+        addIntListener(maxField);
+        TextField minField = new TextField();
+        minField.setText(Integer.toString(toModify.getMin()));
+        minField.setMaxWidth(60);
+        addIntListener(minField);
+        
+        ToolBar top = new ToolBar();
+        top.getItems().addAll(header, new Separator());
+        
+        GridPane left = new GridPane();
+        left.setPadding(new Insets(0, 0, 0, 40));
+        left.getStyleClass().add("gridpane");
+        left.add(idLabel, 1, 0);
+        left.add(idField, 2, 0);
+        left.add(nameLabel, 1, 1);
+        left.add(nameField, 2, 1);
+        left.add(invLabel, 1, 2);
+        left.add(invField, 2, 2);
+        left.add(priceLabel, 1, 3);
+        left.add(priceField, 2, 3);
+        left.add(minLabel, 1, 4);
+        left.add(minField, 2, 4);
+        left.add(maxLabel, 1, 5);
+        left.add(maxField, 2, 5);
+        left.setVgap(10);
+        left.setHgap(10);
+        
+        Label availablePartsLabel = new Label("Available Parts");
+        TableView<Part> availablePartsTable = new TableView<>();
+        availablePartsTable.setPrefHeight(150);
+        TableColumn partsCol = new TableColumn("Part ID");
+        partsCol.setPrefWidth(150);
+        partsCol.setCellValueFactory(new PropertyValueFactory<>("partID"));
+        TableColumn partsNameCol = new TableColumn("Part Name");
+        partsNameCol.setPrefWidth(150);
+        partsNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        TableColumn partsInvLvlCol = new TableColumn("Inventory Level");
+        partsInvLvlCol.setPrefWidth(150);
+        partsInvLvlCol.setCellValueFactory(new PropertyValueFactory<>("inStock"));
+        TableColumn partsPriceCol = new TableColumn("Price/Cost Per Unit");
+        partsPriceCol.setPrefWidth(150);
+        partsPriceCol.setCellValueFactory(new PropertyValueFactory<>("price"));
+        availablePartsTable.getColumns().addAll(partsCol, partsNameCol, partsInvLvlCol,
+                partsPriceCol);
+        availablePartsTable.setEditable(false);
+        ObservableList<Part> availableParts = FXCollections.observableArrayList(inventory.getAllParts());
+        availablePartsTable.setItems(availableParts);
+        
+        
+        ArrayList<Part> updatedList = new ArrayList<>();
+        for(Part p : toModify.getAssociatedParts()){
+            updatedList.add(p);
+        }
+        Label associatedPartsLabel = new Label("Associated Parts");
+        TableView<Part> associatedPartsTable = new TableView<>();
+        associatedPartsTable.setPrefHeight(150);
+        TableColumn partsCol2 = new TableColumn("Part ID");
+        partsCol2.setPrefWidth(150);
+        partsCol2.setCellValueFactory(new PropertyValueFactory<>("partID"));
+        TableColumn partsNameCol2 = new TableColumn("Part Name");
+        partsNameCol2.setPrefWidth(150);
+        partsNameCol2.setCellValueFactory(new PropertyValueFactory<>("name"));
+        TableColumn partsInvLvlCol2 = new TableColumn("Inventory Level");
+        partsInvLvlCol2.setPrefWidth(150);
+        partsInvLvlCol2.setCellValueFactory(new PropertyValueFactory<>("inStock"));
+        TableColumn partsPriceCol2 = new TableColumn("Price/Cost Per Unit");
+        partsPriceCol2.setPrefWidth(150);
+        partsPriceCol2.setCellValueFactory(new PropertyValueFactory<>("price"));
+        associatedPartsTable.getColumns().addAll(partsCol2, partsNameCol2, partsInvLvlCol2,
+                partsPriceCol2);
+        associatedPartsTable.setEditable(false);
+        ObservableList<Part> associatedParts = FXCollections.observableArrayList(updatedList);
+        associatedPartsTable.setItems(associatedParts);
+        
+        Button searchAvlPartsBtn = new Button ("Search");
+        TextField searchAvlPartsField = new TextField();
+        addIntListener(searchAvlPartsField);
+        addSearchResetListener(searchAvlPartsField, availableParts, inventory.getAllParts());
+        searchAvlPartsBtn.setOnAction(e -> {
+            searchParts(searchAvlPartsField, availableParts);
+        });
+        
+        Button addToPartsBtn = new Button("Add");
+        addToPartsBtn.setOnAction(e -> {
+            if(availablePartsTable.getSelectionModel().getSelectedItem() == null){
+               Alert alert = new Alert(AlertType.WARNING);
+               alert.setHeaderText("Please select a part to add");
+               alert.showAndWait();
+           }
+           else{
+               updatedList.add(availablePartsTable.getSelectionModel().getSelectedItem());
+               associatedParts.setAll(updatedList);
+           }
+        });
+        
+        Button removeAssociatedPartBtn = new Button("Delete");
+        removeAssociatedPartBtn.setOnAction(e -> {
+            if(associatedPartsTable.getSelectionModel().getSelectedItem() == null){
+               Alert alert = new Alert(AlertType.WARNING);
+               alert.setHeaderText("Please select a part to remove");
+               alert.showAndWait();
+           }
+           else{
+               updatedList.remove(associatedPartsTable.getSelectionModel().getSelectedItem());
+               associatedParts.setAll(updatedList);
+           }
+        });
+        
+        GridPane right = new GridPane();
+        HBox box = new HBox();
+        box.setSpacing(10);
+        box.getChildren().addAll(availablePartsLabel, searchAvlPartsBtn, searchAvlPartsField);
+        right.setVgap(10);
+        right.add(box, 0, 0);
+        right.add(availablePartsTable, 0, 1);
+        right.add(addToPartsBtn, 0, 2);
+        right.add(associatedPartsLabel, 0, 3);
+        right.add(associatedPartsTable, 0, 4);
+        right.add(removeAssociatedPartBtn, 0, 5);
+        
+        ToolBar bottom = new ToolBar();
+        bottom.getStyleClass().add("toolbar");
+        Button saveBtn = new Button ("Save");
+        saveBtn.setOnAction(e->{
+            if(updatedList.size() >= 2){
+                try{
+                    String name = nameField.getText();
+                    if(name.equals("")){
+                        throw new NumberFormatException();
+                    }
+                    double price = Double.parseDouble(priceField.getText());
+                    int inStock = Integer.parseInt(invField.getText());
+                    int min = Integer.parseInt(minField.getText());
+                    int max = Integer.parseInt(maxField.getText());
+                    toModify.setName(name);
+                    toModify.setPrice(price);
+                    toModify.setInStock(inStock);
+                    toModify.setMin(min);
+                    toModify.setMax(max);
+                    toModify.setAssociatedParts(updatedList);
                     productList.setAll(inventory.getProducts());
                     resetScene();
                 }
